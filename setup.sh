@@ -1,11 +1,12 @@
 # target
+git clone -b v24.09.x git@github.com:fanrui-dev/spdk.git --recursive fanrui-spdk
 cd fanrui-spdk
 ./scripts/pkgdep.sh
 ./configure
 make
 ./test/unit/unittest.sh
 
-sudo HUGEMEM=49152 scripts/setup.sh
+sudo HUGEMEM=65536 scripts/setup.sh
 sudo nohup build/bin/nvmf_tgt -m 0x1 --wait-for-rpc &
 #sudo scripts/rpc.py iobuf_set_options --large-pool-count 8192
 sudo ./scripts/rpc.py framework_start_init
@@ -26,17 +27,18 @@ sudo scripts/rpc.py nvmf_subsystem_add_ns nqn.2016-06.io.spdk:cnode0 delay0 -n 1
 sudo scripts/rpc.py nvmf_subsystem_add_ns nqn.2016-06.io.spdk:cnode1 delay1 -n 1
 sudo scripts/rpc.py nvmf_subsystem_add_ns nqn.2016-06.io.spdk:cnode2 delay2 -n 1
 sudo scripts/rpc.py nvmf_subsystem_add_ns nqn.2016-06.io.spdk:cnode3 delay3 -n 1
-sudo scripts/rpc.py nvmf_subsystem_add_listener nqn.2016-06.io.spdk:cnode0 -t TCP -a 172.26.234.107 -s 4420
-sudo scripts/rpc.py nvmf_subsystem_add_listener nqn.2016-06.io.spdk:cnode1 -t TCP -a 172.26.234.107 -s 4421
-sudo scripts/rpc.py nvmf_subsystem_add_listener nqn.2016-06.io.spdk:cnode2 -t TCP -a 172.26.234.107 -s 4422
-sudo scripts/rpc.py nvmf_subsystem_add_listener nqn.2016-06.io.spdk:cnode3 -t TCP -a 172.26.234.107 -s 4423
-sudo scripts/rpc.py bdev_set_qos_limit Malloc0 --rw-ios-per-sec 10000
-sudo scripts/rpc.py bdev_set_qos_limit Malloc1 --rw-ios-per-sec 10000
-sudo scripts/rpc.py bdev_set_qos_limit Malloc2 --rw-ios-per-sec 10000
-sudo scripts/rpc.py bdev_set_qos_limit Malloc3 --rw-ios-per-sec 10000
+sudo scripts/rpc.py nvmf_subsystem_add_listener nqn.2016-06.io.spdk:cnode0 -t TCP -a 10.129.162.31 -s 4420
+sudo scripts/rpc.py nvmf_subsystem_add_listener nqn.2016-06.io.spdk:cnode1 -t TCP -a 10.129.162.31 -s 4421
+sudo scripts/rpc.py nvmf_subsystem_add_listener nqn.2016-06.io.spdk:cnode2 -t TCP -a 10.129.162.31 -s 4422
+sudo scripts/rpc.py nvmf_subsystem_add_listener nqn.2016-06.io.spdk:cnode3 -t TCP -a 10.129.162.31 -s 4423
+sudo scripts/rpc.py bdev_set_qos_limit Malloc0 --rw-ios-per-sec 5000
+sudo scripts/rpc.py bdev_set_qos_limit Malloc1 --rw-ios-per-sec 5000
+sudo scripts/rpc.py bdev_set_qos_limit Malloc2 --rw-ios-per-sec 5000
+sudo scripts/rpc.py bdev_set_qos_limit Malloc3 --rw-ios-per-sec 5000
 sudo scripts/rpc.py bdev_get_iostat -b Malloc0
 
 # initiator
+git clone git@github.com:axboe/liburing.git
 cd liburing
 ./configure --cc=gcc --cxx=g++;
 make -j$(nproc);
@@ -44,31 +46,36 @@ make liburing.pc
 sudo make install;
 cd ..
 sudo modprobe ublk_drv
+git clone -b v24.09.x git@github.com:fanrui-dev/spdk.git --recursive fanrui-spdk
 cd fanrui-spdk
 ./scripts/pkgdep.sh
 ./configure --with-ublk
 make -j
 ./test/unit/unittest.sh
 
-sudo yum install fio -y
+sudo apt install fio -y
 sudo HUGEMEM=49152 scripts/setup.sh
 sudo nohup build/bin/spdk_tgt -m 0x1 &
 sudo scripts/rpc.py ublk_create_target
-sudo scripts/rpc.py bdev_nvme_attach_controller -b Nvmf0 -t TCP -a 172.26.234.107 -s 4420 -n nqn.2016-06.io.spdk:cnode0 -f IPv4
-sudo scripts/rpc.py bdev_nvme_attach_controller -b Nvmf1 -t TCP -a 172.26.234.107 -s 4421 -n nqn.2016-06.io.spdk:cnode1 -f IPv4
-sudo scripts/rpc.py bdev_nvme_attach_controller -b Nvmf2 -t TCP -a 172.26.234.107 -s 4422 -n nqn.2016-06.io.spdk:cnode2 -f IPv4
-sudo scripts/rpc.py bdev_nvme_attach_controller -b Nvmf3 -t TCP -a 172.26.234.107 -s 4423 -n nqn.2016-06.io.spdk:cnode3 -f IPv4
-sudo scripts/rpc.py bdev_raid_create -n Raid0 -z 64 -r 0 -b "Nvmf0n1 Nvmf1n1 Nvmf2n1 Nvmf3n1"
+sudo scripts/rpc.py bdev_nvme_attach_controller -b Nvmf0 -t TCP -a 10.129.162.31 -s 4420 -n nqn.2016-06.io.spdk:cnode0 -f IPv4
+sudo scripts/rpc.py bdev_nvme_attach_controller -b Nvmf1 -t TCP -a 10.129.162.31 -s 4421 -n nqn.2016-06.io.spdk:cnode1 -f IPv4
+sudo scripts/rpc.py bdev_nvme_attach_controller -b Nvmf2 -t TCP -a 10.129.162.31 -s 4422 -n nqn.2016-06.io.spdk:cnode2 -f IPv4
+sudo scripts/rpc.py bdev_nvme_attach_controller -b Nvmf3 -t TCP -a 10.129.162.31 -s 4423 -n nqn.2016-06.io.spdk:cnode3 -f IPv4
+sudo scripts/rpc.py bdev_nvme_attach_controller -b Nvmf4 -t TCP -a 10.129.166.149 -s 4420 -n nqn.2016-06.io.spdk:cnode0 -f IPv4
+sudo scripts/rpc.py bdev_nvme_attach_controller -b Nvmf5 -t TCP -a 10.129.166.149 -s 4421 -n nqn.2016-06.io.spdk:cnode1 -f IPv4
+sudo scripts/rpc.py bdev_nvme_attach_controller -b Nvmf6 -t TCP -a 10.129.166.149 -s 4422 -n nqn.2016-06.io.spdk:cnode2 -f IPv4
+sudo scripts/rpc.py bdev_nvme_attach_controller -b Nvmf7 -t TCP -a 10.129.166.149 -s 4423 -n nqn.2016-06.io.spdk:cnode3 -f IPv4
+sudo scripts/rpc.py bdev_raid_create -n Raid0 -z 64 -r 0 -b "Nvmf0n1 Nvmf1n1 Nvmf2n1 Nvmf3n1 Nvmf4n1 Nvmf5n1 Nvmf6n1 Nvmf7n1"
 sudo scripts/rpc.py ublk_start_disk Raid0 1 -q 2 -d 128
 sudo scripts/rpc.py bdev_malloc_create -b Malloc0 8192 512
 sudo scripts/rpc.py bdev_delay_create -b Malloc0 -d delay0 -r 300 --nine-nine-read-latency 900 -w 500 --nine-nine-write-latency 1500
 sudo scripts/rpc.py ublk_start_disk delay0 2 -q 2 -d 128
-sudo scripts/rpc.py bdev_set_qos_limit Malloc0 --rw-ios-per-sec 10000
+sudo scripts/rpc.py bdev_set_qos_limit Malloc0 --rw-ios-per-sec 5000
 
-fio --name=test --filename=/dev/ublkb1 --rw=randrw --bs=4k --iodepth=1 --numjobs=1 --runtime=60 --time_based --ioengine=libaio --direct=1 --group_reporting
-fio --name=test --filename=/dev/ublkb2 --rw=randrw --bs=4k --iodepth=1 --numjobs=1 --runtime=60 --time_based --ioengine=libaio --direct=1 --group_reporting
+sudo fio --name=test --filename=/dev/ublkb1 --rw=randrw --bs=4k --iodepth=1 --numjobs=1 --runtime=60 --time_based --ioengine=libaio --direct=1 --group_reporting
+sudo fio --name=test --filename=/dev/ublkb2 --rw=randrw --bs=4k --iodepth=1 --numjobs=1 --runtime=60 --time_based --ioengine=libaio --direct=1 --group_reporting
 
-fio --name=test --filename=/dev/ublkb1 --rw=randrw --bs=4k --iodepth=64 --numjobs=2 --runtime=60 --time_based --ioengine=libaio --direct=1 --group_reporting
+sudo fio --name=test --filename=/dev/ublkb1 --rw=randrw --bs=4k --iodepth=64 --numjobs=2 --runtime=60 --time_based --ioengine=libaio --direct=1 --group_reporting
 
 sudo yum install -y postgresql
 sudo yum install sysbench -y
