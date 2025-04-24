@@ -76,24 +76,27 @@ sudo fio --name=test --filename=/dev/ublkb1 --rw=randrw --bs=4k --iodepth=1 --nu
 sudo fio --name=test --filename=/dev/ublkb2 --rw=randrw --bs=4k --iodepth=1 --numjobs=1 --runtime=60 --time_based --ioengine=libaio --direct=1 --group_reporting
 
 sudo fio --name=test --filename=/dev/ublkb1 --rw=randrw --bs=4k --iodepth=64 --numjobs=2 --runtime=60 --time_based --ioengine=libaio --direct=1 --group_reporting
+sudo python3 monitor.py Malloc0
+sudo python3 io_stat.py -d ublkb1 -i eno1
 
-sudo yum install -y postgresql
-sudo yum install sysbench -y
-docker pull postgres:17.4
+sudo apt install -y postgresql
+sudo apt install sysbench -y
+sudo docker pull postgres:17.4
 
-mkdir -p /remote
-mkfs.ext4 /dev/ublkb1
-mount /dev/ublkb1 /remote
+sudo mkdir -p /remote
+sudo mkfs.ext4 /dev/ublkb1
+sudo mount /dev/ublkb1 /remote
+sudo chown -R shujunyi:shujunyi /remote
 mkdir -p /remote/pgdata
-mkdir /local
-mkfs.ext4 /dev/ublkb2
-mount /dev/ublkb2 /local
+sudo mkdir /local
+sudo mkfs.ext4 /dev/ublkb2
+sudo mount /dev/ublkb2 /local
 mkdir -p /local/pgdata
-
+# change iops to 1000
 bgwriter_lru_maxpages = 0
 synchronous_commit = on
 
-docker run --name postgres-remote -e POSTGRES_PASSWORD=123456 -v /remote/pgdata:/var/lib/postgresql/data -p 3005:5432 -d postgres:17.4
+sudo docker run --name postgres-remote -e POSTGRES_PASSWORD=123456 -v /remote/pgdata:/var/lib/postgresql/data -p 3005:5432 -d postgres:17.4
 psql -h localhost -p 3005 -U postgres
 CREATE DATABASE sbtest;
 CREATE USER sbtest WITH PASSWORD '123456';
@@ -104,11 +107,11 @@ GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO sbtest;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO sbtest;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO sbtest;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO sbtest;
-sysbench /usr/share/sysbench/oltp_write_only.lua --db-driver=pgsql --pgsql-host=172.26.234.106 --pgsql-port=3005 --pgsql-user=sbtest --pgsql-password=123456 --pgsql-db=sbtest --tables=96 --table-size=100000 prepare
-sysbench /usr/share/sysbench/oltp_write_only.lua --db-driver=pgsql --pgsql-host=172.26.234.106 --pgsql-port=3005 --pgsql-user=sbtest --pgsql-password=123456 --pgsql-db=sbtest --tables=96 --table-size=100000 --threads=96 --time=60 --report-interval=10 --percentile=99 run
-sysbench /usr/share/sysbench/oltp_write_only.lua --db-driver=pgsql --pgsql-host=172.26.234.106 --pgsql-port=3005 --pgsql-user=sbtest --pgsql-password=123456 --pgsql-db=sbtest --tables=96 --table-size=100000 cleanup
+sysbench /usr/share/sysbench/oltp_write_only.lua --db-driver=pgsql --pgsql-host=10.129.166.252 --pgsql-port=3005 --pgsql-user=sbtest --pgsql-password=123456 --pgsql-db=sbtest --tables=96 --table-size=100000 prepare
+sysbench /usr/share/sysbench/oltp_write_only.lua --db-driver=pgsql --pgsql-host=10.129.166.252 --pgsql-port=3005 --pgsql-user=sbtest --pgsql-password=123456 --pgsql-db=sbtest --tables=96 --table-size=100000 --threads=96 --time=60 --report-interval=10 --percentile=99 run
+sysbench /usr/share/sysbench/oltp_write_only.lua --db-driver=pgsql --pgsql-host=10.129.166.252 --pgsql-port=3005 --pgsql-user=sbtest --pgsql-password=123456 --pgsql-db=sbtest --tables=96 --table-size=100000 cleanup
 
-docker run --name postgres-local -e POSTGRES_PASSWORD=123456 -v /local/pgdata:/var/lib/postgresql/data -p 3006:5432 -d postgres:17.4
+sudo docker run --name postgres-local -e POSTGRES_PASSWORD=123456 -v /local/pgdata:/var/lib/postgresql/data -p 3006:5432 -d postgres:17.4
 psql -h localhost -p 3006 -U postgres
 CREATE DATABASE sbtest;
 CREATE USER sbtest WITH PASSWORD '123456';
@@ -119,9 +122,9 @@ GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO sbtest;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO sbtest;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO sbtest;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO sbtest;
-sysbench /usr/share/sysbench/oltp_write_only.lua --db-driver=pgsql --pgsql-host=172.26.234.106 --pgsql-port=3006 --pgsql-user=sbtest --pgsql-password=123456 --pgsql-db=sbtest --tables=96 --table-size=100000 prepare
-sysbench /usr/share/sysbench/oltp_write_only.lua --db-driver=pgsql --pgsql-host=172.26.234.106 --pgsql-port=3006 --pgsql-user=sbtest --pgsql-password=123456 --pgsql-db=sbtest --tables=96 --table-size=100000 --threads=96 --time=60 --report-interval=10 --percentile=99 run
-sysbench /usr/share/sysbench/oltp_write_only.lua --db-driver=pgsql --pgsql-host=172.26.234.106 --pgsql-port=3006 --pgsql-user=sbtest --pgsql-password=123456 --pgsql-db=sbtest --tables=96 --table-size=100000 cleanup
+sysbench /usr/share/sysbench/oltp_write_only.lua --db-driver=pgsql --pgsql-host=10.129.166.252 --pgsql-port=3006 --pgsql-user=sbtest --pgsql-password=123456 --pgsql-db=sbtest --tables=96 --table-size=100000 prepare
+sysbench /usr/share/sysbench/oltp_write_only.lua --db-driver=pgsql --pgsql-host=10.129.166.252 --pgsql-port=3006 --pgsql-user=sbtest --pgsql-password=123456 --pgsql-db=sbtest --tables=96 --table-size=100000 --threads=96 --time=60 --report-interval=10 --percentile=99 run
+sysbench /usr/share/sysbench/oltp_write_only.lua --db-driver=pgsql --pgsql-host=10.129.166.252 --pgsql-port=3006 --pgsql-user=sbtest --pgsql-password=123456 --pgsql-db=sbtest --tables=96 --table-size=100000 cleanup
 
 mkdir -p /remote/mediacms_data
 mkdir -p /local/mediacms_data
