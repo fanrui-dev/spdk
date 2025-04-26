@@ -154,8 +154,8 @@ def main():
                         help="Path to the SPDK RPC socket (default: /var/tmp/spdk.sock)")
     parser.add_argument("-i", "--interval", type=float, default=1.0,
                         help="Update interval in seconds (default: 1.0)")
-    parser.add_argument("-m", "--max-iops", type=int, default=5000,
-                        help="Maximum IOPS capacity for utilization calculation (default: 5000)")
+    parser.add_argument("-m", "--max-iops", type=int, default=1000,
+                        help="Maximum IOPS capacity for utilization calculation (default: 1000)")
 
     args = parser.parse_args()
 

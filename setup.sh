@@ -75,7 +75,15 @@ sudo scripts/rpc.py bdev_set_qos_limit Malloc0 --rw-ios-per-sec 5000
 sudo fio --name=test --filename=/dev/ublkb1 --rw=randrw --bs=4k --iodepth=1 --numjobs=1 --runtime=60 --time_based --ioengine=libaio --direct=1 --group_reporting
 sudo fio --name=test --filename=/dev/ublkb2 --rw=randrw --bs=4k --iodepth=1 --numjobs=1 --runtime=60 --time_based --ioengine=libaio --direct=1 --group_reporting
 
+sudo fio --name=test --filename=/remote/test.log --size=1G --rw=randrw --bs=4k --iodepth=1 --numjobs=1 --runtime=60 --time_based --ioengine=libaio --
+direct=1 --group_reporting
+sudo fio --name=test --filename=/local/test.log --size=1G --rw=randrw --bs=4k --iodepth=1 --numjobs=1 --runtime=60 --time_based --ioengine=libaio --
+direct=1 --group_reporting
+
 sudo fio --name=test --filename=/dev/ublkb1 --rw=randrw --bs=4k --iodepth=64 --numjobs=2 --runtime=60 --time_based --ioengine=libaio --direct=1 --group_reporting
+
+sudo fio --name=test --filename=/remote/test.log --size=1G --rw=randrw --bs=4k --iodepth=64 --numjobs=2 --runtime=60 --time_based --ioengine=libaio --direct=1 --group_reporting
+
 sudo python3 monitor.py Malloc0
 sudo python3 io_stat.py -d ublkb1 -i eno1
 
