@@ -99,6 +99,7 @@ mkdir -p /remote/pgdata
 sudo mkdir /local
 sudo mkfs.ext4 /dev/ublkb2
 sudo mount /dev/ublkb2 /local
+sudo chown -R shujunyi:shujunyi /local
 mkdir -p /local/pgdata
 # change iops to 1000
 bgwriter_lru_maxpages = 0
